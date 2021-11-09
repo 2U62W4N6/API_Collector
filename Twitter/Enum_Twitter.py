@@ -12,3 +12,6 @@ class API_Endpoint(enum.Enum):
     MENTIONS = 'users/{id}/mentions'
     LIKED_BY = 'tweets/{id}/liking_users'
     RETWEETED_BY = 'tweets/{id}/retweeted_by'
+
+class Account_IDs(enum.Enum):
+    EXPLOSION = 744095828013424640

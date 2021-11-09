@@ -53,7 +53,6 @@ class Twitter(Base):
         if status_code == 200:
             return response.json()
         else:
-            print(response.json())
             return None
 
 
@@ -91,17 +90,17 @@ class Twitter(Base):
             'tweet.fields' : 'public_metrics,created_at'
         }
         response = self.call_api(url, self._oauth1, self._oauth2, params)
-        return response['data']
+        return response['data'] if 'data' in response else {}
 
     def get_liked_by(self, tweet_id):
         url = API_Version.CURRENT.value + API_Endpoint.LIKED_BY.value.format(id=tweet_id)
         response = self.call_api(url, self._oauth1, self._oauth2)
-        return response['data']
+        return response['data'] if 'data' in response else {}
 
     def get_retweeted_by(self, tweet_id):
         url = API_Version.CURRENT.value + API_Endpoint.RETWEETED_BY.value.format(id=tweet_id)
         response = self.call_api(url, self._oauth1, self._oauth2)
-        return response['data']
+        return response['data'] if 'data' in response else {}
 
     def pagination(self, url, auth, header, params, data, meta):
         if 'next_token' in meta:
