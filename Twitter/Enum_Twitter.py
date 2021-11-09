@@ -5,10 +5,10 @@ class API_Version(enum.Enum):
     CURRENT = 'https://api.twitter.com/2/'
 
 class API_Endpoint(enum.Enum):
-    TWEET = 'tweets/{id}',
-    TWEETS = 'users/{id}/tweets',
-    FOLLOWER = 'users/{id}/followers',
-    FOLLOWING = 'users/{id}/following',
-    MENTIONS = 'users/{id}/mentions',
-    LIKED_BY = 'tweets/{id}/liking_users',
+    TWEET = 'tweets/{id}'
+    TWEETS = 'users/{id}/tweets'
+    FOLLOWER = 'users/{id}/followers'
+    FOLLOWING = 'users/{id}/following'
+    MENTIONS = 'users/{id}/mentions'
+    LIKED_BY = 'tweets/{id}/liking_users'
     RETWEETED_BY = 'tweets/{id}/retweeted_by'
