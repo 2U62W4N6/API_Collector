@@ -6,16 +6,23 @@ class Base(ABC):
     """
 
     @abstractmethod
-    def authentication(self):
+    def call_api(url):
+        """
+        Requesting the API Endpoint
+        """
+        pass
+
+    @abstractmethod
+    def _authentication(self):
         """
         Authentication for the API Access
         """
         pass
 
     @abstractmethod
-    def call_api(url):
+    def _check_authentication(self):
         """
-        Requesting the API Endpoint
+        Check if the authentication is succesful
         """
         pass
 
@@ -27,8 +34,8 @@ class Base(ABC):
         pass
     
     @abstractmethod
-    def _check_authentication(self):
+    def _pagination(self):
         """
-        Check if the authentication is succesful
+        Handles pagination from API Endpoints who distribute their data across multiple pages
         """
         pass

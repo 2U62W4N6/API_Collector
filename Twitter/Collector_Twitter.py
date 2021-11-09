@@ -3,6 +3,8 @@ from Twitter.Enum_Twitter import Account_IDs
 from keys import Twitter_Keys
 import json
 
+# Load all authentication keys and token
+# loaded from 'keys.py'
 bearer = Twitter_Keys.BEARER_TOKEN.value
 api_key = Twitter_Keys.API_KEY.value
 api_key_secret = Twitter_Keys.API_KEY_SECRET.value
@@ -10,6 +12,7 @@ access_token = Twitter_Keys.ACCESS_TOKEN.value
 access_token_secret = Twitter_Keys.ACCESS_TOKEN_SECRET.value
 connection = Twitter(bearer, api_key, api_key_secret, access_token, access_token_secret)
 
+# Retrieve all data points
 def all():
     follower()
     following()
@@ -26,6 +29,7 @@ def following():
 def tweets():
     tweets = connection.get_tweets(Account_IDs.EXPLOSION.value)
     
+    # Update the information for each tweet, since the api is not constructing it perfectly
     def update(tweet):
         if 'referenced_tweets' in tweet:
             tweet['retweet'] = True
@@ -46,7 +50,8 @@ def tweets():
     data = list(map(update, tweets))
     writing(data, f'{Account_IDs.EXPLOSION.name}_tweets')
 
-    
+
+# Write the data points in a json-file
 def writing(data, name):
     with open(f'Data/Twitter/{name}.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
