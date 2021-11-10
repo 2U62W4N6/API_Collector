@@ -21,7 +21,7 @@ class Twitter(Base):
 
 
 
-    def authentication(self, bearer_token, api_key, api_key_secret, access_token, access_token_secret):
+    def _authentication(self, bearer_token, api_key, api_key_secret, access_token, access_token_secret):
         """
         Method to create authentication attributes which are provided in each request.
 

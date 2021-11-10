@@ -6,8 +6,10 @@ class API_Version(enum.Enum):
 
 class API_Endpoint(enum.Enum):
     REPOSITORIES = 'users/{owner}/repos'
-    ISSUES = "repos/{owner}/{repo}/issues"
-    PULLS = "repos/{owner}/{repo}/pulls"
+    CONTRIBUTORS = 'repos/{owner}/{repository}/contributors'
+    ISSUES = "repos/{owner}/{repository}/issues"
+    PULLS = "repos/{owner}/{repository}/pulls"
+    COMMITS = 'repos/{owner}/{repository}/commits'
 
 class Account_IDs(enum.Enum):
     EXPLOSION = "explosion"
