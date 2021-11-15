@@ -72,7 +72,7 @@ class Twitter(Base):
 
     
         
-    def call_api(self, url, auth, header, params={}):
+    def api_get(self, url, auth, header, params={}):
         """
         Method to handle API Requests.
         
@@ -116,7 +116,7 @@ class Twitter(Base):
             'max_results' : 1000,
             'user.fields' : 'public_metrics'
         }
-        response = self.call_api(url, self._oauth1, self._oauth2, params)
+        response = self.api_get(url, self._oauth1, self._oauth2, params)
         return self._pagination(url, self._oauth1, self._oauth2, params, response['data'], response['meta'])
 
 
@@ -136,7 +136,7 @@ class Twitter(Base):
             'max_results' : 1000,
             'user.fields' : 'public_metrics'
         }
-        response = self.call_api(url, self._oauth1, self._oauth2, params)
+        response = self.api_get(url, self._oauth1, self._oauth2, params)
         return self._pagination(url, self._oauth1, self._oauth2, params, response['data'], response['meta'])
 
 
@@ -157,7 +157,7 @@ class Twitter(Base):
             'tweet.fields' : 'public_metrics,created_at',
             'expansions' : 'referenced_tweets.id'
         }
-        response = self.call_api(url, self._oauth1, self._oauth2, params)
+        response = self.api_get(url, self._oauth1, self._oauth2, params)
         return self._pagination(url, self._oauth1, self._oauth2, params, response['data'], response['meta'])
 
 
@@ -176,7 +176,7 @@ class Twitter(Base):
         params = {
             'tweet.fields' : 'public_metrics,created_at'
         }
-        response = self.call_api(url, self._oauth1, self._oauth2, params)
+        response = self.api_get(url, self._oauth1, self._oauth2, params)
         return response['data'] if 'data' in response else {}
 
 
@@ -192,7 +192,7 @@ class Twitter(Base):
             list[dict] : returns a list of tweet-dicts
         """
         url = API_Version.CURRENT.value + API_Endpoint.LIKED_BY.value.format(id=tweet_id)
-        response = self.call_api(url, self._oauth1, self._oauth2)
+        response = self.api_get(url, self._oauth1, self._oauth2)
         return response['data'] if 'data' in response else {}
 
 
@@ -208,19 +208,19 @@ class Twitter(Base):
             list[dict] : returns a list of user-dicts
         """
         url = API_Version.CURRENT.value + API_Endpoint.RETWEETED_BY.value.format(id=tweet_id)
-        response = self.call_api(url, self._oauth1, self._oauth2)
+        response = self.api_get(url, self._oauth1, self._oauth2)
         return response['data'] if 'data' in response else {}
 
 
 
-    def _pagination(self, url, auth, header, params, data, meta):
+    def _pagination(self, url, auth, response_header, params, data, meta):
         """
         Recursive Function
         Iterates over the pages and retrive all data points
         Args:
             url (str) : the endpoint of the API
             auth (OAuth1) : OAuth1 authentication initialized by the OAuth1 class
-            header (dict) : header for the request, also includes the OAuth2 authentication
+            response_header (dict) : header for the request, also includes the OAuth2 authentication
             params (dict) : paramter to add a request query
             data (list) : the data list from the response
             meta (dict) : the meta information from the response
@@ -230,9 +230,9 @@ class Twitter(Base):
         """
         if 'next_token' in meta:
             params['pagination_token'] = meta['next_token']
-            response = self.call_api(url, auth, header, params)
+            response = self.api_get(url, auth, response_header, params)
             data.extend(response['data'])
             meta = response['meta']
-            self._pagination(url, auth, header, params, data, meta)
+            self._pagination(url, auth, response_header, params, data, meta)
         return data
    

@@ -6,7 +6,7 @@ class Base(ABC):
     """
 
     @abstractmethod
-    def call_api(url):
+    def api_get(url):
         """
         Requesting the API Endpoint
         """

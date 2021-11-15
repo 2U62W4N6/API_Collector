@@ -15,6 +15,7 @@ def repositories():
         entry['contributor'] = account.get_contributos(Account_IDs.EXPLOSION.value, entry['name'])
         entry['pulls'] = account.get_pulls(Account_IDs.EXPLOSION.value, entry['name'])
         entry['issues'] = account.get_issues(Account_IDs.EXPLOSION.value, entry['name'])
+        entry['commits'] = account.get_commits(Account_IDs.EXPLOSION.value, entry['name'])
     remove_urls(data)
     writing(data, 'Repositories')
 
