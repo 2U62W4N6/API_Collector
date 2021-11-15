@@ -20,10 +20,12 @@ def all():
 
 def follower():
     data = connection.get_follower(Account_IDs.EXPLOSION.value)
+    handle_nested_dict(data)
     writing(data, f'{Account_IDs.EXPLOSION.name}_follower')
 
 def following():
     data = connection.get_following(Account_IDs.EXPLOSION.value)
+    handle_nested_dict(data)
     writing(data, f'{Account_IDs.EXPLOSION.name}_following')
 
 def tweets():
@@ -40,6 +42,7 @@ def tweets():
 
             tweet['liked_by'] = connection.get_liked_by(tweet['referenced_tweets'][0]['id'])
             tweet['retweeted_by'] = connection.get_retweeted_by(tweet['referenced_tweets'][0]['id'])
+            tweet['referenced_tweets'] = tweet['referenced_tweets'][0]['id']
         else:
             tweet['retweet'] = False
             tweet['liked_by'] = connection.get_liked_by(tweet['id'])
@@ -48,6 +51,7 @@ def tweets():
         return tweet
 
     data = list(map(update, tweets))
+    handle_nested_dict(data)
     writing(data, f'{Account_IDs.EXPLOSION.name}_tweets')
 
 
@@ -55,3 +59,12 @@ def tweets():
 def writing(data, name):
     with open(f'Data/Twitter/{name}.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
+
+
+def handle_nested_dict(data):
+    for entry in data:
+        for key in list(entry):
+            if isinstance(entry[key], dict):
+                for sub_key in entry[key]:
+                    entry[sub_key] = entry[key][sub_key]
+                entry.pop(key)

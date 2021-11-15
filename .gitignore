@@ -2,3 +2,5 @@ env
 __pycache__
 keys.py
 *.json
+Dash/
+.ipynb_checkpoints/

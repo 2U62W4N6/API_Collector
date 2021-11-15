@@ -16,7 +16,7 @@ class Twitter(Base):
         access_token_secret (str) : Access Token Secret key for OAuth1
     """
     def __init__(self, bearer_token, api_key, api_key_secret, access_token, access_token_secret):
-        self.authentication(bearer_token, api_key, api_key_secret, access_token, access_token_secret)
+        self._authentication(bearer_token, api_key, api_key_secret, access_token, access_token_secret)
         self.is_valid = self._check_authentication()
 
 
@@ -67,7 +67,7 @@ class Twitter(Base):
         elif int(header['x-rate-limit-remaining']) <= 0:
             duration = int(header['x-rate-limit-reset']) - int(time.time())
             print(f'[INFO] Rate limit reached for endpoint - sleep for {duration} seconds')
-            time.sleep(duration)
+            time.sleep(duration+5)
         return
 
     
@@ -216,7 +216,7 @@ class Twitter(Base):
     def _pagination(self, url, auth, header, params, data, meta):
         """
         Recursive Function
-        Iterates over the possible pages and retrive all data points
+        Iterates over the pages and retrive all data points
         Args:
             url (str) : the endpoint of the API
             auth (OAuth1) : OAuth1 authentication initialized by the OAuth1 class

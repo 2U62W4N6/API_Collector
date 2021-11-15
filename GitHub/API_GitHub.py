@@ -33,6 +33,8 @@ class GitHub(Base):
         return
 
     def _pagination(self, url, header, data, response_header):
+        if not 'Link' in  response_header:
+            return data
         page = re.search('page=\d+(?=>;\srel="next",)', response_header['Link'])
         if page:
             split = page.group().split('=')
@@ -56,10 +58,10 @@ class GitHub(Base):
         else:
             return None
 
-    def get_repos(self, owner):
+    def get_repository(self, owner):
         url = API_Version.CURRENT.value + API_Endpoint.REPOSITORIES.value.format(owner=owner)
         response, header = self.call_api(url, self._oauth2)
-        self._pagination(url, self._oauth2, response, header)
+        response = self._pagination(url, self._oauth2, response, header)
         return response
 
     def get_contributos(self, owner, repository):
@@ -68,7 +70,7 @@ class GitHub(Base):
             repository=repository
         )
         response, header = self.call_api(url, self._oauth2)
-        self._pagination(url, self._oauth2, response, header)
+        response = self._pagination(url, self._oauth2, response, header)
         return response
 
     def get_issues(self, owner, repository):
@@ -77,7 +79,7 @@ class GitHub(Base):
             repository=repository
         )
         response, header = self.call_api(url, self._oauth2)
-        self._pagination(url, self._oauth2, response, header)
+        response = self._pagination(url, self._oauth2, response, header)
         return response
 
     def get_pulls(self, owner, repository):
@@ -86,6 +88,70 @@ class GitHub(Base):
             repository=repository
         )
         response, header = self.call_api(url, self._oauth2)
-        self._pagination(url, self._oauth2, response, header)
+        response = self._pagination(url, self._oauth2, response, header)
         return response
 
+    def get_discussions(self):
+        url = API_Version.GRAPHQL.value
+        variables = {
+            "n" : 100
+        } 
+        query = """
+        query($n: Int, $after: String){ 
+            repository(name:"spacy", owner:"explosion"){
+                discussions(first: $n, after : $after){
+                pageInfo {
+                    endCursor
+                    hasNextPage
+                    hasPreviousPage
+                }
+                edges{
+                    node{
+                    id
+                    comments{totalCount}
+                    createdAt
+                    publishedAt
+                    labels(first: 20){
+                    edges{
+                        node
+                            {name}
+                        }
+                    }
+                    answerChosenAt
+                    answer{createdAt}
+                    title
+                    url
+                    author{
+                        login
+                    }
+                    category{
+                        isAnswerable
+                        name
+                    }
+                    }
+                }
+                }
+            }
+        }
+        """
+        response = requests.post(url , headers=self._oauth2 ,json={'query': query, 'variables' : variables})
+        data = response.json()['data']['repository']['discussions']['edges']
+        self._check_limit(response.headers)
+        data = self._graphql_pagination(url, query, self._oauth2, response, data, variables)
+        return data
+
+
+    def _graphql_pagination(self, url, query, header, response, data, variables):
+        pageInfo = response.json()['data']['repository']['discussions']['pageInfo']
+        if pageInfo['hasNextPage']:
+            variables['after'] = pageInfo['endCursor']
+            response = requests.post(url , headers=self._oauth2 ,json={'query': query, 'variables' : variables})
+            self._check_limit(response.headers)
+            if response.status_code == 200:   
+                data.extend(response.json()['data']['repository']['discussions']['edges'])
+                return self._graphql_pagination(url, query, header, response, data, variables)
+            else:
+                print('ups')
+                print(response.json())
+        else:
+            return data
