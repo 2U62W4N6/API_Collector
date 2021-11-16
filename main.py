@@ -1,8 +1,7 @@
-#import Twitter.Collector_Twitter as twitter
-import GitHub.Collector_GitHub as github
-
+from Twitter.Twitter_Worker import Worker
 
 if __name__ == '__main__':
-    github.all()
+    test = Worker()
+    test.run()
 
 

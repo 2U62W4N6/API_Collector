@@ -4,7 +4,7 @@ from API import Base
 import requests
 import time
 
-class Twitter(Base):
+class Requester(Base):
     """
     Twitter API Class with all necessary methods.
 
