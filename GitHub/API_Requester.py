@@ -4,7 +4,7 @@ import time
 import re
 from GitHub.Enum_GitHub import API_Endpoint, API_Version
 
-class GitHub(Base):
+class Requester(Base):
     """
     GitHub API Class with all necessary methods.
 
@@ -261,6 +261,7 @@ class GitHub(Base):
                 edges{
                     node{
                     id
+                    url
                     comments{totalCount}
                     createdAt
                     publishedAt
@@ -275,7 +276,7 @@ class GitHub(Base):
                     title
                     url
                     author{
-                        login
+                        url
                     }
                     category{
                         isAnswerable

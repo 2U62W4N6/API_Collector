@@ -1,7 +1,11 @@
-from Twitter.Twitter_Worker import Worker
+from Twitter.Twitter_Worker import Worker as twitter
+from GitHub.GitHub_Worker import Worker as github
 
 if __name__ == '__main__':
-    test = Worker()
-    test.run()
+    twitter_worker = twitter()
+    twitter_worker.run()
+
+    github_worker = github()
+    github_worker.run()
 
 
