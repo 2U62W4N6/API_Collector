@@ -13,6 +13,7 @@ class Collector:
         data = self.requester.get_following(user_id)
         return data
 
+            
     def tweets(self, user_id):
         data = self.requester.get_tweets(user_id)
         

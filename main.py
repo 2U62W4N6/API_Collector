@@ -5,7 +5,7 @@ if __name__ == '__main__':
     twitter_worker = twitter()
     twitter_worker.run()
 
-    github_worker = github()
-    github_worker.run()
+    #github_worker = github()
+    #github_worker.run()
 
 

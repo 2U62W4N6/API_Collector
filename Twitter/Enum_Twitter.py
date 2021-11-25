@@ -15,3 +15,4 @@ class API_Endpoint(enum.Enum):
 
 class Account_IDs(enum.Enum):
     EXPLOSION = 744095828013424640
+    SPACY = 3422200198

@@ -114,7 +114,7 @@ class Requester(Base):
         url = API_Version.CURRENT.value + API_Endpoint.FOLLOWER.value.format(id=user_id)
         params = {
             'max_results' : 1000,
-            'user.fields' : 'public_metrics'
+            'user.fields' : 'public_metrics,profile_image_url'
         }
         response = self.api_get(url, self._oauth1, self._oauth2, params)
         return self._pagination(url, self._oauth1, self._oauth2, params, response['data'], response['meta'])
@@ -134,7 +134,7 @@ class Requester(Base):
         url = API_Version.CURRENT.value + API_Endpoint.FOLLOWING.value.format(id=user_id)
         params = {
             'max_results' : 1000,
-            'user.fields' : 'public_metrics'
+            'user.fields' : 'public_metrics,profile_image_url'
         }
         response = self.api_get(url, self._oauth1, self._oauth2, params)
         return self._pagination(url, self._oauth1, self._oauth2, params, response['data'], response['meta'])
@@ -155,7 +155,8 @@ class Requester(Base):
         params = {
             'max_results' : 100,
             'tweet.fields' : 'public_metrics,created_at',
-            'expansions' : 'referenced_tweets.id'
+            'expansions' : 'referenced_tweets.id,author_id',
+            'user.fields' : 'username',
         }
         response = self.api_get(url, self._oauth1, self._oauth2, params)
         return self._pagination(url, self._oauth1, self._oauth2, params, response['data'], response['meta'])
@@ -174,7 +175,9 @@ class Requester(Base):
         """
         url = API_Version.CURRENT.value + API_Endpoint.TWEET.value.format(id=tweet_id)
         params = {
-            'tweet.fields' : 'public_metrics,created_at'
+            'tweet.fields' : 'public_metrics,created_at',
+            'expansions':'author_id',
+            'user.fields' : 'username',
         }
         response = self.api_get(url, self._oauth1, self._oauth2, params)
         return response['data'] if 'data' in response else {}
@@ -210,7 +213,6 @@ class Requester(Base):
         url = API_Version.CURRENT.value + API_Endpoint.RETWEETED_BY.value.format(id=tweet_id)
         response = self.api_get(url, self._oauth1, self._oauth2)
         return response['data'] if 'data' in response else {}
-
 
 
     def _pagination(self, url, auth, response_header, params, data, meta):
