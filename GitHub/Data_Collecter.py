@@ -16,6 +16,10 @@ class Collector:
             entry['pulls'] = self.requester.get_pulls(user_id, entry['name'])
             entry['issues'] = self.requester.get_issues(user_id, entry['name'])
             entry['commits'] = self.requester.get_commits(user_id, entry['name'])
+            entry['traffic_views'] = self.requester.get_views(user_id, entry['name'])
+            entry['traffic_clones'] = self.requester.get_clones(user_id, entry['name'])
+            entry['traffic_paths'] = self.requester.get_paths(user_id, entry['name'])
+            entry['traffic_referrers'] = self.requester.get_referrers(user_id, entry['name'])
         return data
 
     def discussions(self):

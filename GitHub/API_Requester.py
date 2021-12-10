@@ -109,7 +109,7 @@ class Requester(Base):
         if status_code == 200:
             return response.json(), response.headers
         else:
-            return None
+            return None, response.headers
         
 
 
@@ -239,6 +239,38 @@ class Requester(Base):
         response = self._pagination(url, self._oauth2, response, header)
         return response
 
+
+    def get_clones(self, owner, repository):
+        url = API_Version.CURRENT.value + API_Endpoint.TRAFFIC_CLONES.value.format(
+            owner=owner,
+            repository=repository
+        )
+        response, _ = self.api_get(url, self._oauth2)
+        return response
+
+    def get_views(self, owner, repository):
+        url = API_Version.CURRENT.value + API_Endpoint.TRAFFIC_VIEWS.value.format(
+            owner=owner,
+            repository=repository
+        )
+        response, _ = self.api_get(url, self._oauth2)
+        return response
+
+    def get_paths(self, owner, repository):
+        url = API_Version.CURRENT.value + API_Endpoint.TRAFFIC_PATHS.value.format(
+            owner=owner,
+            repository=repository
+        )
+        response, _ = self.api_get(url, self._oauth2)
+        return response
+
+    def get_referrers(self, owner, repository):
+        url = API_Version.CURRENT.value + API_Endpoint.TRAFFIC_REFERRERS.value.format(
+            owner=owner,
+            repository=repository
+        )
+        response, _ = self.api_get(url, self._oauth2)
+        return response
 
 
     def get_discussions(self):
