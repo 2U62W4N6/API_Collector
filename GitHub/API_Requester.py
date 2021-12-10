@@ -192,6 +192,7 @@ class Requester(Base):
             owner=owner,
             repository=repository
         )
+        url += '?state=all'
         response, header = self.api_get(url, self._oauth2)
         response = self._pagination(url, self._oauth2, response, header)
         return response
@@ -212,6 +213,7 @@ class Requester(Base):
             owner=owner,
             repository=repository
         )
+        url += '?state=all'
         response, header = self.api_get(url, self._oauth2)
         response = self._pagination(url, self._oauth2, response, header)
         return response
@@ -232,6 +234,7 @@ class Requester(Base):
             owner=owner,
             repository=repository
         )
+        url += '?state=all'
         response, header = self.api_get(url, self._oauth2)
         response = self._pagination(url, self._oauth2, response, header)
         return response
