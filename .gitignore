@@ -5,3 +5,5 @@ keys.py
 Dash/
 .ipynb_checkpoints/
 .env
+*.csv
+*.xlsx

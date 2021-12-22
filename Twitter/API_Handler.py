@@ -1,3 +1,4 @@
+from requests.api import head
 from Twitter.Enum_Twitter import API_Endpoint, API_Version
 from requests_oauthlib import OAuth1
 from API import Base
@@ -96,7 +97,10 @@ class Requester(Base):
         
         if status_code == 200:
             return response.json()
+        elif status_code == 429:
+            self.api_get(url, auth, header, params)
         else:
+            print(response.json())
             return None
 
 
@@ -154,7 +158,7 @@ class Requester(Base):
         url = API_Version.CURRENT.value + API_Endpoint.TWEETS.value.format(id=user_id)
         params = {
             'max_results' : 100,
-            'tweet.fields' : 'public_metrics,created_at',
+            'tweet.fields' : 'public_metrics,created_at,author_id',
             'expansions' : 'referenced_tweets.id,author_id',
             'user.fields' : 'username',
         }

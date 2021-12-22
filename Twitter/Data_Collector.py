@@ -17,12 +17,12 @@ class Collector:
     def tweets(self, user_id):
         data = self.requester.get_tweets(user_id)
         
-        def update(tweet):
-            if 'referenced_tweets' in tweet:
-                response = self.requester.get_tweet(tweet['referenced_tweets'][0]['id'])
-                tweet['retweet'] = response
-            return tweet
+        #def update(tweet):
+        #    if 'referenced_tweets' in tweet:
+        #        response = self.requester.get_tweet(tweet['referenced_tweets'][0]['id'])
+        #        tweet['retweet'] = response
+        #    return tweet
 
-        data = list(map(update, data))
+        #data = list(map(update, data))
         return data
 

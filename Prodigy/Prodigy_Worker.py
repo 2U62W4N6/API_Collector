@@ -22,7 +22,7 @@ class Worker:
         orders = self.collector.orders()
         packages = self.collector.packages()
 
-        self.formatter.order_object(orders)
+        #self.formatter.order_object(orders)
 
         self.write(product, f"Prodigy_Products")
         self.write(orders, f"Prodigy_Orders")

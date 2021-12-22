@@ -108,6 +108,8 @@ class Requester(Base):
 
         if status_code == 200:
             return response.json(), response.headers
+        elif status_code == 429:
+            self.api_get(url, header, params)
         else:
             return None, response.headers
         
