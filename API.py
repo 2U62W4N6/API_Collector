@@ -1,41 +1,47 @@
 from abc import ABC, abstractmethod
 
-class Base(ABC):
+class API(ABC):
     """
-    Abstract Class for the different APIs with all necessary methods
+    abstract class for the different apis with all mandatory methods
     """
 
     @abstractmethod
-    def api_get(url):
+    def call_api():
         """
-        Requesting the API Endpoint
-        """
-        pass
-
-    @abstractmethod
-    def _authentication(self):
-        """
-        Authentication for the API Access
+        requesting the API Endpoint
         """
         pass
 
     @abstractmethod
-    def _check_authentication(self):
+    def _authentication():
         """
-        Check if the authentication is succesful
+        authentication for the API Access
         """
         pass
 
     @abstractmethod
-    def _check_limit(self):
+    def _check_authentication():
         """
-        Overviews the rate limit and waits if needed
+        check if the authentication is successful
+        """
+        pass
+
+    @abstractmethod
+    def _check_limit():
+        """
+        overviews the rate limit and waits if needed
         """
         pass
     
     @abstractmethod
-    def _pagination(self):
+    def _pagination():
         """
-        Handles pagination from API Endpoints who distribute their data across multiple pages
+        handles pagination from api endpoints who distribute their data across multiple pages
+        """
+        pass
+
+    def _payload():
+        """
+        handles the payload of the response
         """
         pass

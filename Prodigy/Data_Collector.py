@@ -1,4 +1,4 @@
-from Prodigy.API_Handler import Requester
+from prodigy.api_handler import Requester
 
 class Collector:
 

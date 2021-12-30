@@ -1,7 +1,9 @@
-from Twitter.Twitter_Worker import Worker as twitter
-from GitHub.GitHub_Worker import Worker as github
-from Prodigy.Prodigy_Worker import Worker as prodigy
 import concurrent.futures
+from concurrent.futures import wait
+from twitter.twitter_worker import Worker as twitter
+from github.github_worker import Worker as github
+from prodigy.prodigy_worker import Worker as prodigy
+from module.logging import LogHandler
 
 
 if __name__ == '__main__':
@@ -17,9 +19,15 @@ if __name__ == '__main__':
         prodigy_workter = prodigy()
         prodigy_workter.run()
 
+    github_job()
+    
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        executor.submit(twitter_job)
-        executor.submit(github_job)
-        executor.submit(prodigy_job)
+        t1 = executor.submit(twitter_job)
+        t2 = executor.submit(github_job)
+        t3 = executor.submit(prodigy_job)
+        wait(t1)
+        wait(t2)
+        wait(t3)
+        print(f'[LOGS] : DEBUG: {LogHandler.COUNT[10]} | INFO : {LogHandler.COUNT[20]} | WARNING : {LogHandler.COUNT[30]} | ERROR : {LogHandler.COUNT[40]} | CRITICAL: {LogHandler.COUNT[50]}')
 
 

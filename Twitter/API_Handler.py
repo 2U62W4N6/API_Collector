@@ -1,11 +1,13 @@
-from requests.api import head
-from Twitter.Enum_Twitter import API_Endpoint, API_Version
+from twitter.enum_twitter import API_Endpoint, API_Version
 from requests_oauthlib import OAuth1
-from API import Base
+from api import API
 import requests
 import time
+from typing import Union, Optional, List
+from module.logging import LOGGER_DEBUG, LOGGER_INFO, LOGGER_WARNING, LOGGER_ERROR, LOGGER_CRITICAL 
 
-class Requester(Base):
+
+class Requester(API):
     """
     Twitter API Class with all necessary methods.
 
@@ -16,13 +18,25 @@ class Requester(Base):
         access_token (str) : Access Token key for OAuth1
         access_token_secret (str) : Access Token Secret key for OAuth1
     """
-    def __init__(self, bearer_token, api_key, api_key_secret, access_token, access_token_secret):
+    def __init__(self, 
+                bearer_token: str,
+                api_key: str,
+                api_key_secret: str,
+                access_token: str,
+                access_token_secret: str):
+                
         self._authentication(bearer_token, api_key, api_key_secret, access_token, access_token_secret)
         self.is_valid = self._check_authentication()
 
 
 
-    def _authentication(self, bearer_token, api_key, api_key_secret, access_token, access_token_secret):
+    def _authentication(self,
+                        bearer_token: str,
+                        api_key: str,
+                        api_key_secret: str,
+                        access_token: str,
+                        access_token_secret: str
+                        ) -> None:
         """
         Method to create authentication attributes which are provided in each request.
 
@@ -38,10 +52,10 @@ class Requester(Base):
 
 
 
-    def _check_authentication(self):
+    def _check_authentication(self) -> bool:
         """
         Method to check authentication on a example-request for OAuth1 and OAuth2.
-        No requests can be made if the check fails.
+        No requests can be furhter made if the check fails.
         """
         example = 'https://api.twitter.com/2/tweets/1261326399320715264'
 
@@ -50,30 +64,39 @@ class Requester(Base):
         
         oauth2 = requests.get(example, headers=self._oauth2)
         oauth2_status = oauth2.status_code
-
-        print(f'[INFO] Authentication Check: {oauth1_status == 200}')
-        print(f'[INFO] Bearer_Token Check: {oauth2_status == 200}')
         
-        return oauth1_status == 200 and oauth2_status == 200
+        if oauth1_status == 200 and oauth2_status == 200:
+            LOGGER_INFO.log('[TWITTER] Credential-Check: OK')
+            return True
+        else:
+            LOGGER_CRITICAL.log('[TWITTER] Credential-Check: WRONG | check or update provided keys and token in the .env file')
+            return False
+        
 
 
 
-    def _check_limit(self, header):
+    def _check_limit(self, header: dict) -> None:
         """
         Method to handle API Limitation.
         Checks whether remaining request can still be made or to wait until the next window opens 
         """
-        if not 'x-rate-limit-remaining' in header:
-            return
-        elif int(header['x-rate-limit-remaining']) <= 0:
-            duration = int(header['x-rate-limit-reset']) - int(time.time())
-            print(f'[INFO] Rate limit reached for endpoint - sleep for {duration} seconds')
-            time.sleep(duration+5)
+        rate_limit_remaining = header.get('x-rate-limit-remaining', None)
+        if rate_limit_remaining:
+            if int(rate_limit_remaining) <= 0:
+                window = header['x-rate-limit-reset']
+                duration = int(window) - int(time.time())
+                LOGGER_INFO.log(f'[TWITTER] Rate Limit Reached: Sleep for {duration} Seconds')
+                time.sleep(duration + 1)
         return
 
     
         
-    def api_get(self, url, auth, header, params={}):
+    def call_api(self,
+                url: str,
+                auth: OAuth1,
+                header: dict,
+                params: dict={}
+                ) -> Optional[Union[dict, List[dict]]]:
         """
         Method to handle API Requests.
         
@@ -91,26 +114,60 @@ class Requester(Base):
         
         response = requests.get(url, auth=auth, headers=header, params=params)
         status_code = response.status_code
-        print(url, params, f'[{status_code}]')
+        
 
         self._check_limit(response.headers)
-        
+
+        message = f'{url} | {params} | [{status_code}]'
         if status_code == 200:
+            LOGGER_INFO.log(message)
             return response.json()
-        elif status_code == 429:
-            self.api_get(url, auth, header, params)
         else:
-            print(response.json())
+            LOGGER_WARNING.log(message)
+            LOGGER_WARNING.log(response.json())
             return None
 
+    def _payload(self, response: requests.Response) -> Optional[Union[dict, List[dict]]]:
+        return response.get('data', None)
+
+    def _pagination(self,
+                    url: str,
+                    auth: OAuth1,
+                    response_header: dict,
+                    params: dict,
+                    data: Optional[Union[dict, List[dict]]],
+                    meta: dict
+                    ) ->  Optional[Union[dict, List[dict]]]:
+        """
+        Recursive Function
+        Iterates over the pages and retrive all data points
+        Args:
+            url (str) : the endpoint of the API
+            auth (OAuth1) : OAuth1 authentication initialized by the OAuth1 class
+            response_header (dict) : header for the request, also includes the OAuth2 authentication
+            params (dict) : paramter to add a request query
+            data (list) : the data from the response
+            meta (dict) : the meta information from the response
+
+        Return:
+            list(dict) : returns a list of response objects (user, tweet)
+        """
+        if 'next_token' in meta:
+            params['pagination_token'] = meta['next_token']
+            response = self.call_api(url, auth, response_header, params)
+            data.extend(self._payload(response))
+            meta = response['meta']
+            self._pagination(url, auth, response_header, params, data, meta)
+        return data
+   
 
 
-    def get_follower(self, user_id):
+    def get_follower(self, user_id: Union[int, str]) -> Optional[Union[dict, List[dict]]]:
         """
         Retrieve all followers for the given user id
 
         Args:
-            user_id (str) : id of the twitter account
+            user_id (int | str) : id of the twitter account
 
         Return:
             list[dict] : returns a list of user-dicts
@@ -120,17 +177,17 @@ class Requester(Base):
             'max_results' : 1000,
             'user.fields' : 'public_metrics,profile_image_url'
         }
-        response = self.api_get(url, self._oauth1, self._oauth2, params)
-        return self._pagination(url, self._oauth1, self._oauth2, params, response['data'], response['meta'])
+        response = self.call_api(url, self._oauth1, self._oauth2, params)
+        return self._pagination(url, self._oauth1, self._oauth2, params, self._payload(response), response['meta'])
 
 
 
-    def get_following(self, user_id):
+    def get_following(self, user_id: Union[int, str]) -> Optional[Union[dict, List[dict]]]:
         """
         Retrieve all following (friends) for the given user id
 
         Args:
-            user_id (str) : id of the twitter account
+            user_id (int | str) : id of the twitter account
 
         Return:
             list[dict] : returns a list of user-dicts
@@ -140,17 +197,17 @@ class Requester(Base):
             'max_results' : 1000,
             'user.fields' : 'public_metrics,profile_image_url'
         }
-        response = self.api_get(url, self._oauth1, self._oauth2, params)
-        return self._pagination(url, self._oauth1, self._oauth2, params, response['data'], response['meta'])
+        response = self.call_api(url, self._oauth1, self._oauth2, params)
+        return self._pagination(url, self._oauth1, self._oauth2, params, self._payload(response), response['meta'])
 
 
 
-    def get_tweets(self, user_id):
+    def get_tweets(self, user_id: Union[int, str]) -> Optional[Union[dict, List[dict]]]:
         """
         Retrieve all tweets for the given user id
 
         Args:
-            user_id (str) : id of the twitter account
+            user_id (int | str) : id of the twitter account
 
         Return:
             list[dict] : returns a list of tweet-dicts
@@ -162,17 +219,17 @@ class Requester(Base):
             'expansions' : 'referenced_tweets.id,author_id',
             'user.fields' : 'username',
         }
-        response = self.api_get(url, self._oauth1, self._oauth2, params)
-        return self._pagination(url, self._oauth1, self._oauth2, params, response['data'], response['meta'])
+        response = self.call_api(url, self._oauth1, self._oauth2, params)
+        return self._pagination(url, self._oauth1, self._oauth2, params, self._payload(response), response['meta'])
 
 
 
-    def get_tweet(self, tweet_id):
+    def get_tweet(self, tweet_id: Union[int, str]) -> Optional[Union[dict, List[dict]]]:
         """
         Retrieve a tweet for the given tweet id
 
         Args:
-            user_id (str) : id of the twitter account
+            user_id (int | str) : id of the twitter account
 
         Return:
             (dict) : returns a tweet
@@ -183,62 +240,40 @@ class Requester(Base):
             'expansions':'author_id',
             'user.fields' : 'username',
         }
-        response = self.api_get(url, self._oauth1, self._oauth2, params)
-        return response['data'] if 'data' in response else {}
+        response = self.call_api(url, self._oauth1, self._oauth2, params)
+        return self._payload(response)
 
 
 
-    def get_liked_by(self, tweet_id):
+    def get_liked_by(self, tweet_id: Union[int, str]) -> Optional[Union[dict, List[dict]]]:
         """
         Retrieve a list of user who liked a tweet, for the given tweet id
 
         Args:
-            user_id (str) : id of the twitter account
+            user_id (int | str) : id of the twitter account
 
         Return:
             list[dict] : returns a list of tweet-dicts
         """
         url = API_Version.CURRENT.value + API_Endpoint.LIKED_BY.value.format(id=tweet_id)
-        response = self.api_get(url, self._oauth1, self._oauth2)
-        return response['data'] if 'data' in response else {}
+        response = self.call_api(url, self._oauth1, self._oauth2)
+        return self._payload(response)
 
 
 
-    def get_retweeted_by(self, tweet_id):
+    def get_retweeted_by(self, tweet_id: Union[int, str]) -> Optional[Union[dict, List[dict]]]:
         """
-        Retrieve a list of user who liked a tweet, for the given tweet id
+        Retrieve a list of user who retweeted a tweet, for the given tweet id
 
         Args:
-            user_id (str) : id of the twitter account
+            user_id (int | str) : id of the twitter account
 
         Return:
             list[dict] : returns a list of user-dicts
         """
         url = API_Version.CURRENT.value + API_Endpoint.RETWEETED_BY.value.format(id=tweet_id)
-        response = self.api_get(url, self._oauth1, self._oauth2)
-        return response['data'] if 'data' in response else {}
+        response = self.call_api(url, self._oauth1, self._oauth2)
+        return self._payload(response)
 
 
-    def _pagination(self, url, auth, response_header, params, data, meta):
-        """
-        Recursive Function
-        Iterates over the pages and retrive all data points
-        Args:
-            url (str) : the endpoint of the API
-            auth (OAuth1) : OAuth1 authentication initialized by the OAuth1 class
-            response_header (dict) : header for the request, also includes the OAuth2 authentication
-            params (dict) : paramter to add a request query
-            data (list) : the data list from the response
-            meta (dict) : the meta information from the response
-
-        Return:
-            list(dict) : returns a list of response objects (user, tweet)
-        """
-        if 'next_token' in meta:
-            params['pagination_token'] = meta['next_token']
-            response = self.api_get(url, auth, response_header, params)
-            data.extend(response['data'])
-            meta = response['meta']
-            self._pagination(url, auth, response_header, params, data, meta)
-        return data
-   
+    

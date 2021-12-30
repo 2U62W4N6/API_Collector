@@ -1,9 +1,9 @@
 env
 __pycache__
-keys.py
 *.json
-Dash/
 .ipynb_checkpoints/
 .env
 *.csv
 *.xlsx
+*.ipynb
+*.log
