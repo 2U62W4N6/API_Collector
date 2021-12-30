@@ -27,7 +27,7 @@ class Worker:
         # Exit thread if the credentials are not valid
         if not self.requester.is_valid:
             return
-            
+
         owner = Account_IDs.EXPLOSION.value
 
         # Request all data
@@ -42,6 +42,7 @@ class Worker:
         issues = self.collector.stars(owner, repo_list)
         commits = self.collector.stars(owner, repo_list)
 
+        # need to update formatter class
         stars = pd.DataFrame(stars)
         forks =  pd.DataFrame(forks)
         watchers = pd.DataFrame(watchers)

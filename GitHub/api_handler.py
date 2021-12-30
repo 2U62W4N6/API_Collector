@@ -134,8 +134,6 @@ class Requester(API):
 
 
 
-
-
     def get_clones(self, owner: str, repository: str) -> Optional[Union[dict, List[dict]]]:
         """
         Retrieve a list of clone count 
@@ -227,6 +225,7 @@ class Requester(API):
         return response['data']['search']['edges']
         
 
+
     def get_stars(self, owner: str, repository: str) -> Optional[Union[dict, List[dict]]]:
         """
         Retrieve stargazer timeline
@@ -257,7 +256,6 @@ class Requester(API):
                 break
         repo['stars'] = stars
         return repo
-
 
 
 
@@ -329,7 +327,6 @@ class Requester(API):
 
 
 
-
     def get_commits(self, owner: str, repository: str) -> Optional[Union[dict, List[dict]]]:
         """
         Retrieve commit timeline
@@ -360,6 +357,8 @@ class Requester(API):
                 break
         repo['commits'] = commits
         return repo
+
+
 
     def get_pulls(self, owner: str, repository: str) -> Optional[Union[dict, List[dict]]]:
         """
